@@ -1,0 +1,35 @@
+/* Small, rounded data marks and compact controls from the reference dashboard. */
+.chart-card { padding: 12px 15px 10px; }
+.chart-card .dcard__head { padding: 0; border: 0; min-height: 45px; align-items: flex-start; }
+.chart-card .dcard__head h3 { font-size: 11px; color: var(--muted); font-weight: 600; }
+.chart-card .dcard__lead { margin: 4px 0 0; line-height: 1.35; display: flex; align-items: baseline; gap: 7px; flex-wrap: wrap; }
+.chart-metric { font-size: 18px; font-weight: 750; color: var(--chart-blue); letter-spacing: -.025em; }
+.chart-metric small { font-size: 11px; font-weight: 600; margin-left: 2px; }
+.chart-card:nth-child(2) .chart-metric { color: var(--chart-teal); }
+.chart-context { font-size: 10px; color: var(--muted); font-weight: 500; }
+.chart-switch { display: inline-flex; padding: 3px; gap: 2px; flex: none; border: 1px solid var(--line); background: #eef3f6; border-radius: 8px; }
+.chart-switch button { border: 0; border-radius: 5px; padding: 3px 7px; background: transparent; color: var(--muted); font-size: 10px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.chart-switch button[aria-pressed="true"] { background: #fff; color: var(--ink); box-shadow: 0 1px 2px #1b355510; }
+.chart-switch button:hover { color: var(--ink); }
+.chart .grid { stroke: #e4ebf1; stroke-width: 1; }
+.chart .axis { fill: #7e8fa3; font: 400 10px var(--font); }
+.chart .val { fill: #45566b; font: 600 10px var(--font); }
+.chart .cash-zero { stroke: #bdcbd9; stroke-width: 1; }
+.chart .cash-column { fill: var(--chart-blue); }
+.chart .cash-column.is-negative { fill: #94b5e6; }
+.chart .bar-sold { fill: var(--chart-teal); }
+.chart .bar-inventory { fill: var(--chart-blue); }
+.chart .recovery-label { fill: var(--chart-blue); font: 600 10px var(--font); }
+.chart .hit.on, .chart .hit:focus { fill: #3674d909; outline: none; }
+.chart .hit:focus-visible { stroke: var(--chart-blue); stroke-width: 1; stroke-dasharray: 3 3; }
+.chart-caption { font-size: 10px; color: var(--muted); line-height: 1.5; margin-top: 4px; }
+.chart-card .dcard__note { padding: 0; font-size: 10px; margin-top: 4px; }
+.chart-card .dcard__note:empty { display: none; }
+.chart-card .chart { margin-top: 1px; }
+.chart-tip { font-family: var(--font); font-size: 11px; }
+@media (max-width: 560px) {
+  .chart-card { padding: 13px; }
+  .chart-card .dcard__head { flex-direction: row; }
+  .chart-metric { font-size: 19px; }
+  .chart-switch button { min-height: 28px; padding: 4px 8px; }
+}

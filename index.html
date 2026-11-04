@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
+<title>BURI시뮬레이션</title>
+<meta name="description" content="생산·판매 조건에 따른 필요자금, 예상 이익, 자금 회수 시점을 계산하는 사업 시뮬레이션 대시보드">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" crossorigin>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/dashboard.css">
+<link rel="stylesheet" href="css/views.css">
+<link rel="stylesheet" href="css/brand.css">
+<link rel="stylesheet" href="css/charts.css">
+<link rel="stylesheet" href="css/overview.css">
+<meta name="theme-color" content="#3674d9">
+</head>
+<body>
+<a class="skip" href="#main">본문으로 바로 가기</a>
+<svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h7m4 0h5M4 17h3m4 0h9"/><circle cx="13" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 3v17h17M9 15v-4m5 4V6m5 9V9"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+  <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M20 8V5a2 2 0 0 0-2-2H6a3 3 0 0 0 0 6h14v11H6a3 3 0 0 1-3-3V6"/><path d="M20 12h-5v5h5m-3-2.5h.01"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v.01"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2"/></symbol>
+  <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 8M3 4v6h6"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></symbol>
+  <symbol id="i-next" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+</defs></svg>
+
+<header class="top">
+  <div class="wrap top__inner">
+    <a class="brand" href="#dashboard" aria-label="BURI시뮬레이션 대시보드로"><span class="brand__logo"><img src="assets/buri-logo-original.png" alt="BURI 로고" width="1536" height="1024"></span><span class="brand__name">BURI시뮬레이션<span class="brand__sub">BUSINESS PLANNING</span></span></a>
+    <div class="top__context"><p id="planName"></p></div>
+    <div class="top__actions">
+      <span class="save-state" id="saveState" aria-live="polite">이 브라우저에 자동 저장됩니다</span>
+      <button type="button" class="btn btn--line" id="exportBtn" title="입력한 조건을 이 기기에 파일로 저장합니다">내보내기</button>
+      <button type="button" class="btn btn--line" id="importBtn" title="저장해 둔 설정 파일을 불러옵니다">불러오기</button>
+      <input type="file" id="importFile" accept=".json,application/json" hidden>
+      <button type="button" class="btn btn--line" id="resetBtn"><svg class="ui-icon" aria-hidden="true"><use href="#i-reset"/></svg>초기화</button>
+    </div>
+  </div>
+</header>
+
+<aside class="sidebar" aria-label="화면 전환">
+  <p class="nav-label">WORKSPACE</p>
+  <nav class="side-nav" aria-label="주요 메뉴">
+    <a class="nav-item" href="#dashboard" data-view="dashboard"><svg class="ui-icon" aria-hidden="true"><use href="#i-grid"/></svg><span>대시보드</span></a>
+    <a class="nav-item" href="#settings" data-view="settings"><svg class="ui-icon" aria-hidden="true"><use href="#i-sliders"/></svg><span>조건 설정</span></a>
+    <a class="nav-item" href="#detail" data-view="detail"><svg class="ui-icon" aria-hidden="true"><use href="#i-list"/></svg><span>상세 내역</span></a>
+  </nav>
+  <div class="sidebar__foot"><svg class="ui-icon" aria-hidden="true"><use href="#i-lock"/></svg><strong>나만의 작업 공간</strong><p>입력한 내용은 이 브라우저에만<br>저장되며 서버로 보내지 않습니다.</p></div>
+</aside>
+
+<main class="wrap workspace" id="main" tabindex="-1">
+  <div class="workspace-heading">
+    <div><p class="page-eyebrow" id="viewEyebrow">사업 계획 / 대시보드</p><h1 id="pageTitle">BURI시뮬레이션</h1></div>
+    <span class="workspace-label">사업계획용 추정치</span>
+  </div>
+
+  <!-- =========================== 대시보드 =========================== -->
+  <section class="view" id="view-dashboard" data-view-panel="dashboard" aria-labelledby="dashTitle">
+    <h2 class="sr-only" id="dashTitle">대시보드</h2>
+
+    <div class="card restore-fail" id="restoreFail" role="alert" hidden>
+      <div>
+        <strong>저장된 입력값을 복원하지 못했습니다.</strong>
+        <p id="restoreFailReason"></p>
+        <p>저장값은 지우거나 덮어쓰지 않고 그대로 두었습니다. 지금은 자동 저장을 멈춘 상태입니다.</p>
+      </div>
+      <div class="restore-fail__acts">
+        <button type="button" class="btn btn--line" id="rawDownloadBtn">원본 저장값 파일로 받기</button>
+        <button type="button" class="btn btn--line" id="rawImportBtn">설정 파일로 복구</button>
+        <button type="button" class="btn" id="freshStartBtn">원본 보관 후 새로 시작</button>
+      </div>
+    </div>
+
+    <!-- ① 상태 요약 + ② 핵심 지표 4개 -->
+    <section class="card overview" id="overview" aria-labelledby="overviewTitle">
+      <div class="result-bar">
+        <h3 id="overviewTitle">시뮬레이션 지표</h3>
+        <span class="period-chip" data-out="periodLabel"></span>
+        <p class="status-line" id="statusLine" aria-live="polite"></p>
+        <p class="result-bar__basis">판매량은 가정값 · 공급가액 기준 · 세금 차감 전</p>
+      </div>
+      <div class="kpi-row kpi-row--4">
+        <article class="kpi" data-core="funding">
+          <p class="kpi__label">초기 필요자금</p>
+          <p class="kpi__value" data-out="fundingMan">—</p>
+          <p class="kpi__sub" data-out="fundingSub"></p>
+          <p class="kpi__delta" data-delta="funding" hidden></p>
+        </article>
+        <article class="kpi kpi--accent" data-core="profit">
+          <div class="kpi__top"><p class="kpi__label" data-out="profitLabel">3개월 예상 이익</p><span data-out="scopeTag"></span></div>
+          <p class="kpi__value" data-out="profitMan">—</p>
+          <p class="kpi__sub" data-out="profitSub"></p>
+          <p class="kpi__delta" data-delta="profit" hidden></p>
+        </article>
+        <article class="kpi" data-core="payback">
+          <p class="kpi__label">투입금 회수 시점</p>
+          <p class="kpi__value" data-out="paybackBig">—</p>
+          <p class="kpi__sub" data-out="paybackSub"></p>
+          <p class="kpi__delta" data-delta="payback" hidden></p>
+        </article>
+        <article class="kpi" data-core="stock">
+          <p class="kpi__label">기간 말 남은 재고</p>
+          <p class="kpi__value" data-out="stockBig">—</p>
+          <p class="kpi__sub" data-out="stockSub"></p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ③ 간단한 조건 수정 -->
+    <div class="card condbar" id="condbar">
+      <div class="condbar__row">
+        <div class="condbar__item">
+          <label for="q-quantity" class="condbar__label">생산</label>
+          <span class="control control--qty"><input id="q-quantity" class="in num" inputmode="numeric" data-path="quantity" data-kind="int" placeholder="미입력" autocomplete="off"><span class="unit">상자</span></span>
+        </div>
+        <div class="condbar__item">
+          <label for="q-quoteCost" class="condbar__label" id="qCostLabel">상자당 원가</label>
+          <span class="control control--qty" id="qCostWrap"><input id="q-quoteCost" class="in num" inputmode="decimal" data-path="quoteCost" data-kind="money" placeholder="미입력" autocomplete="off"><span class="unit">원</span></span>
+          <span class="condbar__fixed" id="qCostFixed" hidden></span>
+        </div>
+        <div class="condbar__item">
+          <label for="q-price" class="condbar__label">납품가</label>
+          <span class="control control--qty"><input id="q-price" class="in num" inputmode="decimal" data-path="price" data-kind="money" placeholder="미입력" autocomplete="off"><span class="unit">원</span></span>
+        </div>
+        <div class="condbar__item" id="qSalesItem">
+          <label for="q-commonMonthly" class="condbar__label" id="qSalesLabel">월 판매</label>
+          <span class="control control--qty" id="qCommonWrap"><input id="q-commonMonthly" class="in num" inputmode="numeric" data-path="commonMonthly" data-kind="int" placeholder="미입력" autocomplete="off"><span class="unit">상자</span></span>
+          <span class="condbar__fixed" id="qSalesFixed" hidden></span>
+        </div>
+        <div class="condbar__item">
+          <label for="q-months" class="condbar__label">판매기간</label>
+          <span class="control control--mo"><input id="q-months" class="in num" inputmode="numeric" data-path="months" data-kind="months" placeholder="—" autocomplete="off"><span class="unit">개월</span></span>
+        </div>
+        <div class="condbar__item" id="qPresetItem" hidden>
+          <label for="q-preset" class="sr-only">저장한 조건 불러오기</label>
+          <select id="q-preset" class="in select"></select>
+        </div>
+        <button type="button" class="btn condbar__edit" id="openDrawerBtn" aria-haspopup="dialog" aria-controls="drawer"><svg class="ui-icon" aria-hidden="true"><use href="#i-sliders"/></svg>조건 수정</button>
+      </div>
+      <p class="field__msg" data-msg="months"></p>
+      <p class="field__msg" data-msg="quantity"></p>
+      <p class="field__msg" data-msg="price"></p>
+      <p class="field__msg" data-msg="quoteCost"></p>
+      <p class="field__msg" data-msg="commonMonthly"></p>
+      <div class="alert alert--check" id="priceCheck" hidden>
+        <span><strong>단가 확인 필요</strong> 생산수량을 바꿔도 원가와 납품가는 자동으로 바뀌지 않습니다.</span>
+        <span class="alert__acts"><button type="button" class="btn btn--small btn--line" data-drawer-focus="#f-price">단가 수정</button><button type="button" class="btn btn--small btn--line" id="priceCheckBtn">현재 단가로 확인함</button></span>
+      </div>
+    </div>
+
+    <!-- ④ 현금 회수 + 시나리오 비교 -->
+    <div class="dash-grid dash-grid--main">
+      <article class="card dcard chart-card" aria-labelledby="cashCardTitle">
+        <header class="dcard__head">
+          <div><h3 id="cashCardTitle">현금 회수</h3><p class="dcard__lead" data-out="cashLead"></p></div>
+          <div class="dcard__tools"><div class="chart-switch" role="group" aria-label="현금 그래프 표시 기준"><button type="button" data-cash-mode="cumulative" aria-pressed="true">누적</button><button type="button" data-cash-mode="monthly" aria-pressed="false">월별</button></div><a class="dcard__more" href="#detail/monthly" data-goto="monthly">월별 표<svg class="ui-icon" aria-hidden="true"><use href="#i-next"/></svg></a></div>
+        </header>
+        <div class="chart" id="cashChart"></div>
+        <p class="chart-caption" data-out="cashCaption"></p>
+        <p class="dcard__note" data-out="cashNote"></p>
+      </article>
+
+      <article class="card dcard scen-card" aria-labelledby="scenCardTitle">
+        <header class="dcard__head">
+          <div><h3 id="scenCardTitle">시나리오 비교</h3><p class="dcard__lead">판매계획 대비 비율만 다르고 생산수량·단가·비용은 같습니다.</p></div>
+          <a class="dcard__more" href="#detail/scenario" data-goto="scenario">비율 수정·상세<svg class="ui-icon" aria-hidden="true"><use href="#i-next"/></svg></a>
+        </header>
+        <div class="scen" id="scenRows" role="table" aria-label="시나리오별 예상 이익과 회수 시점"></div>
+        <div class="scen__notes" id="scenMiniNotes"></div>
+      </article>
+    </div>
+
+    <!-- ⑤ 아래쪽 분석 -->
+    <div class="dash-grid dash-grid--sub">
+      <article class="card dcard" aria-labelledby="priceCardTitle">
+        <header class="dcard__head">
+          <div><h3 id="priceCardTitle">상자당 납품가 구성</h3></div>
+          <a class="dcard__more" href="#detail/cost" data-goto="cost">원가 내역<svg class="ui-icon" aria-hidden="true"><use href="#i-next"/></svg></a>
+        </header>
+        <p class="price-summary" data-out="priceLead"></p>
+        <div class="pbar" id="priceBar"></div>
+        <p class="dcard__note">판매 후 남는 금액은 월 고정비·초기 일회성 비용을 빼기 전 금액입니다.</p>
+      </article>
+
+      <article class="card dcard chart-card" aria-labelledby="invCardTitle">
+        <header class="dcard__head">
+          <div><h3 id="invCardTitle">월별 판매 · 재고 추이</h3><p class="dcard__lead" data-out="invLead"></p></div>
+          <div class="dcard__tools"><div class="chart-switch" role="group" aria-label="수량 그래프 표시 기준"><button type="button" data-stock-mode="sales" aria-pressed="true">판매량</button><button type="button" data-stock-mode="inventory" aria-pressed="false">재고</button></div><a class="dcard__more" href="#detail/monthly" data-goto="monthly">월별 표<svg class="ui-icon" aria-hidden="true"><use href="#i-next"/></svg></a></div>
+        </header>
+        <div class="chart" id="invChart"></div>
+        <p class="chart-caption" data-out="invCaption"></p>
+        <p class="dcard__note" data-out="invNote"></p>
+      </article>
+    </div>
+  </section>
+
+  <!-- =========================== 조건 설정 =========================== -->
+  <section class="view" id="view-settings" data-view-panel="settings" aria-labelledby="setTitle" hidden>
+    <div class="view-head">
+      <div><h2 id="setTitle">조건 설정</h2><p class="hint">모든 입력은 즉시 계산에 반영되고 자동 저장됩니다. 필요한 항목만 입력하세요.</p></div>
+      <a class="btn btn--line" href="#dashboard"><svg class="ui-icon" aria-hidden="true"><use href="#i-back"/></svg>대시보드로</a>
+    </div>
+    <div id="settingsHome">
+      <!-- 설정 폼: 조건 설정 화면과 ‘조건 수정’ 패널이 같은 폼(같은 입력 상태)을 함께 씁니다 -->
+      <div class="settings" id="settingsForm">
+        <section class="card sgroup" aria-labelledby="sg1">
+          <h3 id="sg1">생산수량 · 납품가 · 원가</h3>
+          <div class="sgrid">
+            <div class="field">
+              <label for="f-productName">제품명</label>
+              <div class="control"><input id="f-productName" class="in" type="text" data-path="productName" data-kind="text" maxlength="60" placeholder="예: 내 제품" autocomplete="off"></div>
+            </div>
+            <div class="field">
+              <label for="f-planName">계획 이름</label>
+              <div class="control"><input id="f-planName" class="in" type="text" data-path="planName" data-kind="text" maxlength="60" placeholder="예: 1차 생산 계획" autocomplete="off"></div>
+            </div>
+          </div>
+          <div class="sgrid">
+            <div class="field">
+              <label for="f-quantity">초기 생산수량</label>
+              <div class="control"><input id="f-quantity" class="in num" inputmode="numeric" data-path="quantity" data-kind="int" autocomplete="off"><span class="unit">상자</span></div>
+            </div>
+            <div class="field">
+              <label for="f-price">상자당 납품가</label>
+              <div class="control"><input id="f-price" class="in num" inputmode="decimal" data-path="price" data-kind="money" autocomplete="off"><span class="unit">원/상자</span></div>
+              <p class="hint">우리가 실제로 받는 금액 (소비자가 아님)</p>
+              <p class="field__msg" data-msg="price"></p>
+            </div>
+          </div>
+          <fieldset class="field">
+            <legend class="field__label">원가 입력 방식</legend>
+            <div class="seg">
+              <label><input type="radio" name="costMode" value="itemized" data-path="costMode" data-kind="radio"> 항목별 입력</label>
+              <label><input type="radio" name="costMode" value="quote" data-path="costMode" data-kind="radio"> 완제품 견적 총액</label>
+            </div>
+            <p class="hint">선택한 방식 하나만 계산합니다. 두 방식의 원가를 합산하지 않습니다.</p>
+          </fieldset>
+          <div id="costItemized" class="field">
+            <span class="field__label">항목별 상자당 원가</span>
+            <div class="items" id="costItems"></div>
+            <div class="items__foot">
+              <button type="button" class="btn btn--small btn--line" id="addItemBtn">+ 항목 추가</button>
+              <p class="items__total">합계 <strong data-out="itemsTotal">—</strong></p>
+            </div>
+            <p class="hint">비워 둔 금액은 합계에 넣지 않습니다.</p>
+          </div>
+          <div id="costQuote" class="field">
+            <label for="f-quoteCost">상자당 총 조달원가 (완제품 견적)</label>
+            <div class="control"><input id="f-quoteCost" class="in num" inputmode="decimal" data-path="quoteCost" data-kind="money" autocomplete="off"><span class="unit">원/상자</span></div>
+            <p class="field__msg" data-msg="quoteCost"></p>
+          </div>
+          <div class="field" id="sgPresets">
+            <span class="field__label">저장한 생산 조건 <small>수량·원가·납품가를 묶어 저장해 두고 다시 불러옵니다</small></span>
+            <div class="upresets" id="userPresets"></div>
+            <div class="upreset-new">
+              <div class="control"><input id="presetName" class="in" type="text" maxlength="40" placeholder="조건 이름 (예: 소량 생산)" aria-label="저장할 조건 이름" autocomplete="off"></div>
+              <button type="button" class="btn btn--small btn--line" id="savePresetBtn">현재 조건 저장</button>
+            </div>
+          </div>
+          <p class="hint">금액은 공급가액(부가세 별도) 기준으로 통일해 입력하세요.</p>
+        </section>
+
+        <section class="card sgroup" aria-labelledby="sg2" id="sgCost">
+          <h3 id="sg2">판매비 · 별도 비용 <span class="badge" data-out="costCountBadge"></span></h3>
+          <div class="sgrid">
+            <div class="field" data-opt="commissionRate">
+              <label for="f-commissionRate">판매 수수료율 <span class="term" tabindex="0" data-tip="판매처·플랫폼에 매출의 일정 비율로 내는 비용입니다.">?</span></label>
+              <div class="control"><input id="f-commissionRate" class="in num" inputmode="decimal" data-path="commissionRate" data-kind="opt" placeholder="미입력"><span class="unit">% (매출 대비)</span></div>
+              <div class="opt-row"><span class="badge" data-status="commissionRate"></span><button type="button" class="link" data-zero="commissionRate">0%로 확인</button></div>
+            </div>
+            <div class="field" data-opt="extraSellingCost">
+              <label for="f-extraSellingCost">판매한 상자당 추가 판매비 <small>배송·포장 등</small></label>
+              <div class="control"><input id="f-extraSellingCost" class="in num" inputmode="decimal" data-path="extraSellingCost" data-kind="opt" placeholder="미입력"><span class="unit">원/상자</span></div>
+              <div class="opt-row"><span class="badge" data-status="extraSellingCost"></span><button type="button" class="link" data-zero="extraSellingCost">0원으로 확인</button></div>
+            </div>
+            <div class="field" data-opt="oneTimeCost">
+              <label for="f-oneTimeCost">초기 일회성 비용 <small>개발비·몰드비 등</small> <span class="term" tabindex="0" data-tip="기간 이익에서 한 번만 차감하며 상자당 원가에 다시 배분하지 않습니다.">?</span></label>
+              <div class="control"><input id="f-oneTimeCost" class="in num" inputmode="decimal" data-path="oneTimeCost" data-kind="opt" placeholder="미입력"><span class="unit">원</span></div>
+              <div class="opt-row"><span class="badge" data-status="oneTimeCost"></span><button type="button" class="link" data-zero="oneTimeCost">0원으로 확인</button></div>
+            </div>
+            <div class="field" data-opt="monthlyFixed">
+              <label for="f-monthlyFixed">월 고정비 <span class="term" tabindex="0" data-tip="판매량과 상관없이 매달 나가는 비용입니다. 예: 임차료, 고정 급여.">?</span></label>
+              <div class="control"><input id="f-monthlyFixed" class="in num" inputmode="decimal" data-path="monthlyFixed" data-kind="opt" placeholder="미입력"><span class="unit">원/월</span></div>
+              <div class="opt-row"><span class="badge" data-status="monthlyFixed"></span><button type="button" class="link" data-zero="monthlyFixed">0원으로 확인</button></div>
+            </div>
+          </div>
+          <p class="calc-line">상자당 판매비 <strong data-out="unitSelling">—</strong> <span class="hint" data-out="unitSellingDesc"></span></p>
+          <p class="hint">상자당 원가에 이미 포함한 인건비·제조 경비는 월 고정비에 다시 넣지 마세요. 두 번 차감됩니다. 비워 둔 항목은 ‘미입력’으로 계산에서 제외되며, 0원과 구분됩니다.</p>
+        </section>
+
+        <section class="card sgroup" aria-labelledby="sg3" id="sgSales">
+          <h3 id="sg3">판매계획</h3>
+          <div class="sgrid">
+            <div class="field">
+              <label for="f-months">판매기간</label>
+              <div class="control"><input id="f-months" class="in num" inputmode="numeric" data-path="months" data-kind="months" autocomplete="off"><span class="unit">개월</span></div>
+              <p class="hint">1~60개월</p>
+            </div>
+            <fieldset class="field">
+              <legend class="field__label">공통 월 판매량 계산 방식</legend>
+              <div class="seg">
+                <label><input type="radio" name="salesMode" value="direct" data-path="salesMode" data-kind="radio"> 직접 입력</label>
+                <label><input type="radio" name="salesMode" value="channel" data-path="salesMode" data-kind="radio"> 판매처 기준</label>
+              </div>
+            </fieldset>
+          </div>
+          <div class="field" id="salesDirect">
+            <label for="f-commonMonthly">공통 월 판매량</label>
+            <div class="control control--w"><input id="f-commonMonthly" class="in num" inputmode="numeric" data-path="commonMonthly" data-kind="int" placeholder="미입력" autocomplete="off"><span class="unit">상자/월</span></div>
+            <p class="hint">판매량은 수요 예측이 아닌 가정값입니다.</p>
+          </div>
+          <div id="salesChannel">
+            <div class="grid2">
+              <div class="field"><label for="f-stores">매장 수</label><div class="control"><input id="f-stores" class="in num" inputmode="numeric" data-path="channel.stores" data-kind="opt" placeholder="미입력"><span class="unit">곳</span></div></div>
+              <div class="field"><label for="f-perDay">매장당 하루 판매수량</label><div class="control"><input id="f-perDay" class="in num" inputmode="decimal" data-path="channel.perStorePerDay" data-kind="opt" placeholder="미입력"><span class="unit">상자/일</span></div></div>
+              <div class="field"><label for="f-days">월 영업일</label><div class="control"><input id="f-days" class="in num" inputmode="numeric" data-path="channel.businessDays" data-kind="opt" placeholder="미입력"><span class="unit">일/월</span></div></div>
+              <div class="field"><label for="f-other">기타 월 판매수량</label><div class="control"><input id="f-other" class="in num" inputmode="numeric" data-path="channel.otherMonthly" data-kind="opt" placeholder="0 (없으면 비워 둠)"><span class="unit">상자/월</span></div></div>
+            </div>
+            <p class="calc-line">공통 월 판매량 <strong data-out="channelMonthly">—</strong> <span class="hint">= 매장 수 × 매장당 하루 판매수량 × 월 영업일 + 기타</span></p>
+            <p class="hint">‘기타 판매’에도 같은 납품가를 적용합니다. 소수점 결과는 월별로 반올림해 정수 상자로 계산합니다.</p>
+          </div>
+          <div class="field" id="sgMonthly">
+            <span class="field__label">특정 월 판매량 수정 <span data-out="overrideBadge"></span></span>
+            <p class="hint">비워 두면 공통 월 판매량을 사용합니다.</p>
+            <div class="months" id="monthOverrides"></div>
+            <button type="button" class="link" id="clearOverridesBtn">월별 수정값 모두 지우기</button>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <section class="card sgroup transfer" id="transfer" aria-labelledby="sgTransfer">
+      <h3 id="sgTransfer">설정 보관 · 다른 주소로 옮기기</h3>
+      <p class="hint">입력값은 <strong>이 주소·이 브라우저</strong>에만 저장되며 서버로 보내지 않습니다. 주소가 바뀌거나 다른 기기에서 이어 쓰려면 설정 파일로 옮기세요.</p>
+      <ol class="steps">
+        <li><strong>쓰던 주소에서</strong> 상단의 <em>내보내기</em>를 눌러 설정 파일(.json)을 이 기기에 저장합니다.</li>
+        <li><strong>새 주소(또는 다른 기기)에서</strong> <em>불러오기</em>로 그 파일을 선택합니다. 작성 중인 값이 있으면 덮어쓰기 전에 확인합니다.</li>
+        <li>불러온 조건으로 결과를 다시 계산합니다. 미입력과 0원 확인 상태도 그대로 옮겨집니다.</li>
+      </ol>
+      <div class="transfer__acts">
+        <button type="button" class="btn" data-action="export">설정 파일 내보내기</button>
+        <button type="button" class="btn btn--line" data-action="import">설정 파일 불러오기</button>
+        <button type="button" class="btn btn--line" data-action="example">예시 체험 (가상 데이터)</button>
+      </div>
+      <p class="hint">설정 파일에는 입력한 사업정보가 들어 있습니다. 공개된 곳에 올리지 마세요.</p>
+    </section>
+  </section>
+
+  <!-- =========================== 상세 내역 =========================== -->
+  <section class="view" id="view-detail" data-view-panel="detail" aria-labelledby="detTitle" hidden>
+    <div class="view-head">
+      <div><h2 id="detTitle">상세 내역</h2><p class="hint">대시보드 결과의 월별 표, 원가 내역, 목표 역산과 계산 근거입니다.</p></div>
+      <a class="btn btn--line" href="#dashboard"><svg class="ui-icon" aria-hidden="true"><use href="#i-back"/></svg>대시보드로</a>
+    </div>
+    <nav class="subnav" aria-label="상세 내역 바로가기">
+      <a href="#detail/monthly" data-goto="monthly">월별 판매·자금</a>
+      <a href="#detail/scenario" data-goto="scenario">시나리오</a>
+      <a href="#detail/cost" data-goto="cost">원가 내역</a>
+      <a href="#detail/target" data-goto="target">목표 이익 역산</a>
+      <a href="#detail/basis" data-goto="basis">계산 근거</a>
+    </nav>
+
+    <section class="card dsec" id="sec-monthly" tabindex="-1" aria-labelledby="secMonthlyT">
+      <h3 id="secMonthlyT">월별 판매 및 자금 회수</h3>
+      <div class="insight" data-out="cashInsight"></div>
+      <div data-out="reconcile"></div>
+      <div class="table-wrap">
+        <table class="tbl tbl--month" id="monthTable">
+          <thead><tr>
+            <th scope="col">월</th><th scope="col">판매수량</th><th scope="col">매출</th><th scope="col">판매분 원가</th><th scope="col">판매비</th><th scope="col">월 고정비</th><th scope="col">월 이익<small>일회성 비용 차감 전</small></th><th scope="col">남은 재고</th><th scope="col">누적 현금</th>
+          </tr></thead>
+          <tbody></tbody>
+          <tfoot></tfoot>
+        </table>
+      </div>
+      <p class="hint">월 이익 = 매출 − 판매분 원가 − 판매비 − 월 고정비. 월별 현금 증감 = 매출 − 판매비 − 월 고정비 (생산비는 시작 시 이미 지급).</p>
+    </section>
+
+    <section class="card dsec" id="sec-scenario" tabindex="-1" aria-labelledby="secScenT">
+      <h3 id="secScenT">시나리오 상세</h3>
+      <div class="insight" data-out="scenInsight"></div>
+      <div class="table-wrap">
+        <table class="tbl tbl--scen" id="scenTable">
+          <thead><tr><th scope="col">항목</th><th scope="col">보수적 <small data-out="rateLow"></small></th><th scope="col" class="is-base">기준 <small data-out="rateBase"></small></th><th scope="col">낙관적 <small data-out="rateHigh"></small></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div id="scenNotes"></div>
+      <div class="rate-edit">
+        <span class="field__label">판매계획 대비 비율</span>
+        <label>보수적 <span class="control control--mini"><input class="in num" inputmode="decimal" data-path="scenarioRates.low" data-kind="rate" aria-label="보수적 시나리오 판매계획 대비 비율"><span class="unit">%</span></span></label>
+        <label>기준 <span class="control control--mini"><input class="in num" inputmode="decimal" data-path="scenarioRates.base" data-kind="rate" aria-label="기준 시나리오 판매계획 대비 비율"><span class="unit">%</span></span></label>
+        <label>낙관적 <span class="control control--mini"><input class="in num" inputmode="decimal" data-path="scenarioRates.high" data-kind="rate" aria-label="낙관적 시나리오 판매계획 대비 비율"><span class="unit">%</span></span></label>
+      </div>
+      <p class="hint">각 월 판매계획 × 비율을 반올림(0.5 이상 올림)해 정수 상자로 계산하고, 남은 재고를 넘지 않게 제한합니다. 추가 생산은 계산하지 않습니다.</p>
+    </section>
+
+    <section class="card dsec" id="sec-cost" tabindex="-1" aria-labelledby="secCostT">
+      <h3 id="secCostT">원가 내역</h3>
+      <div class="insight" data-out="costInsight"></div>
+      <div class="costbar" id="costBar"></div>
+      <div class="table-wrap">
+        <table class="tbl" id="costTable">
+          <thead><tr><th scope="col">항목</th><th scope="col">상자당 금액</th><th scope="col">원가 중 비중</th><th scope="col">생산수량 전체</th></tr></thead>
+          <tbody></tbody>
+          <tfoot></tfoot>
+        </table>
+      </div>
+    </section>
+
+    <section class="card dsec" id="sec-target" tabindex="-1" aria-labelledby="secTargetT">
+      <h3 id="secTargetT">목표 이익 역산</h3>
+      <div class="field">
+        <label for="f-target">목표 월 이익</label>
+        <div class="control control--w"><input id="f-target" class="in num" inputmode="decimal" data-path="targetMonthlyProfit" data-kind="signed" autocomplete="off"><span class="unit">원/월</span></div>
+      </div>
+      <div id="targetOut"></div>
+    </section>
+
+    <section class="card dsec" id="sec-basis" tabindex="-1" aria-labelledby="secBasisT">
+      <h3 id="secBasisT">계산 근거와 가정</h3>
+      <div class="basis-grid">
+        <div>
+          <h4>매출 · 이익</h4>
+          <dl class="rows">
+            <div><dt>판매수량 × 납품가</dt><dd data-out="soldXPrice">—</dd></div>
+            <div class="tot"><dt>예상 매출</dt><dd data-out="revenue">—</dd></div>
+            <div><dt>− 판매분 원가</dt><dd data-out="cogs">—</dd></div>
+            <div><dt>− 판매비</dt><dd data-out="selling">—</dd></div>
+            <div><dt>− 월 고정비 × <span data-out="monthsN">3</span>개월</dt><dd data-out="fixedTotal">—</dd></div>
+            <div><dt>− 초기 일회성 비용</dt><dd data-out="oneTime">—</dd></div>
+            <div class="tot"><dt>기간 예상 이익</dt><dd data-out="periodProfit">—</dd></div>
+            <div><dt>월평균 예상 이익</dt><dd data-out="avgExact">—</dd></div>
+          </dl>
+        </div>
+        <div>
+          <h4>현금 · 재고</h4>
+          <dl class="rows">
+            <div><dt>시작 시 지출</dt><dd data-out="initialCash">—</dd></div>
+            <div><dt>+ 기간 중 현금 증감</dt><dd data-out="cashIn">—</dd></div>
+            <div class="tot"><dt>기간 말 누적 현금</dt><dd data-out="endCash">—</dd></div>
+            <div><dt>최대 필요자금</dt><dd data-out="maxFunding">—</dd></div>
+            <div><dt>남은 재고</dt><dd data-out="endInv">—</dd></div>
+            <div><dt>재고 원가 <small>현금 아님</small></dt><dd data-out="invCost">—</dd></div>
+            <div><dt>재고 부족으로 반영 안 된 계획</dt><dd data-out="excessQty">—</dd></div>
+          </dl>
+        </div>
+      </div>
+      <h4>계산 가정</h4>
+      <ul class="assume">
+        <li><strong>입력값 기준</strong> 결과는 입력한 원가·납품가·판매량으로 계산한 추정치이며 확정 수익이 아닙니다.</li>
+        <li><strong>판매 가정</strong> 판매량은 수요 예측이 아닌 사용자가 정한 가정값입니다.</li>
+        <li><strong>부가세</strong> 금액은 공급가액(부가세 별도) 기준으로 통일해 입력하는 것을 전제로 합니다.</li>
+        <li><strong>세금</strong> 예상 이익은 세금 차감 전입니다. 세금 신고·납부액은 계산하지 않습니다.</li>
+        <li>초기 생산 1회, 추가 생산 없음. 생산비·초기 일회성 비용은 시작 시 전액 지급합니다.</li>
+        <li>판매대금은 판매한 달에 전액 수령합니다. 반품·폐기·외상 정산은 제외합니다.</li>
+        <li>월별 판매량은 남은 재고를 넘지 않습니다. 남은 재고는 폐기하지 않으며 현금으로 보지 않습니다.</li>
+      </ul>
+    </section>
+  </section>
+
+  <footer class="foot">로그인·서버 저장 없이 이 브라우저(localStorage)에만 저장됩니다. 사업계획 검토용 계산 도구이며 세무·회계 자문을 대신하지 않습니다.</footer>
+</main>
+
+<!-- 조건 수정 패널 (PC 오른쪽 / 모바일 하단) -->
+<div class="drawer-backdrop" id="drawerBackdrop" hidden></div>
+<div class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle" hidden>
+  <div class="drawer__head">
+    <div><h2 id="drawerTitle">조건 수정</h2><p class="drawer__live"><span class="live-dot" aria-hidden="true"></span>입력 즉시 반영 · 자동 저장</p></div>
+    <button type="button" class="btn btn--line drawer__close" id="drawerClose" aria-label="패널 닫기 (입력한 내용은 유지됩니다)"><svg class="ui-icon" aria-hidden="true"><use href="#i-close"/></svg>닫기</button>
+  </div>
+  <div class="drawer__summary" data-out="drawerSummary"></div>
+  <div class="drawer__body" id="drawerBody"></div>
+  <p class="drawer__foot">닫아도 입력한 내용은 그대로 유지됩니다.</p>
+</div>
+
+<!-- 모바일 하단 요약 (조건 설정·상세 내역 화면) -->
+<div class="mbar" id="mbar" hidden>
+  <div class="mbar__vals">
+    <span><small>필요자금</small><strong data-out="mFunding">—</strong></span>
+    <span><small data-out="mProfitLabel">예상 이익</small><strong data-out="mProfit">—</strong></span>
+    <span><small>회수</small><strong data-out="mPayback">—</strong></span>
+  </div>
+  <a class="btn" href="#dashboard" id="mbarBtn">결과 보기</a>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden><span id="toastMsg"></span><button type="button" class="btn btn--small" id="toastAction" hidden></button><button type="button" class="toast__close" id="toastClose" aria-label="알림 닫기">×</button></div>
+<div class="tip" id="chartTip" hidden></div>
+
+<script src="js/products.js"></script>
+<script src="js/calc.js"></script>
+<script src="js/state.js"></script>
+<script src="js/navigation.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

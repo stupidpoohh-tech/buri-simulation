@@ -1,0 +1,163 @@
+/* 대시보드 정보 구조: 상태 요약 → 핵심 지표 4개 → 조건 → 현금 회수·시나리오 → 아래쪽 분석
+   brand.css / charts.css 의 서체·색·카드 기준을 그대로 쓰고 배치만 정합니다. */
+
+/* ---------- 상태 요약 ---------- */
+.overview { margin-bottom: 10px; }
+.result-bar { flex-wrap: wrap; row-gap: 4px; }
+.status-line { flex: 1 1 320px; min-width: 0; font-size: 12.5px; font-weight: 600; color: var(--ink); line-height: 1.5; }
+.st-warn, .st-loss { color: var(--danger); }
+.st-cash { color: var(--brown); }
+.st-missing { color: var(--orange); }
+
+/* ---------- 핵심 지표 4개 ---------- */
+.kpi-row.kpi-row--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); border-bottom: 0; }
+.kpi-row--4 .kpi { padding: 12px 16px 13px; }
+.kpi__top { display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; }
+.kpi__sub { font-size: 11px; color: var(--ink-2); margin-top: 5px; line-height: 1.5; }
+.kpi__sub .flag { margin-right: 5px; }
+.kpi__value[title] { cursor: help; }
+.scope-tag { font: inherit; font-size: 10.5px; font-weight: 700; line-height: 1.4; padding: 2px 8px; border-radius: 999px; cursor: pointer; white-space: nowrap; }
+.scope-tag.is-missing { color: var(--orange); background: var(--orange-50); border: 1px solid var(--orange-line); }
+.scope-tag.is-missing::after { content: ' →'; }
+.scope-tag.is-missing:hover { border-color: var(--orange); }
+.scope-tag.is-ok { color: var(--chart-teal); background: #effaf8; border: 1px solid #cdeeea; }
+.kpi[data-core="stock"] .kpi__value { color: var(--ink); }
+.kpi[data-core="stock"].has-stock .kpi__value { color: var(--brown); }
+.kpi.is-unrecovered .kpi__value { font-size: 21px; }
+
+/* ---------- 조건 바 (한 줄) ---------- */
+.condbar { padding: 10px 15px; margin-bottom: 10px; }
+.condbar__row { flex-wrap: wrap; }
+.condbar__applied { font-size: 11px; color: var(--ink-2); margin-left: auto; white-space: nowrap; }
+.condbar__applied strong { color: var(--ink); }
+.condbar__applied .muted { color: var(--muted); margin-left: 2px; }
+.condbar__edit { margin-left: 0; }
+.condbar .field__msg:empty { display: none; }
+.condbar .alert { margin-top: 8px; }
+
+/* ---------- 현금 회수 + 시나리오 ---------- */
+.dash-grid--main { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 10px; margin-bottom: 10px; }
+.dash-grid--sub { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; align-items: start; }
+.dash-grid .chart-card { padding: 0; }
+.dash-grid .chart-card .dcard__head { padding: 10px 15px 6px; min-height: 0; border-bottom: 0; align-items: flex-start; }
+.dash-grid .chart-card .chart { padding: 0 8px 0 4px; }
+.dash-grid .chart-card .chart-caption { padding: 0 15px; font-size: 10.5px; }
+.dash-grid .chart-card .dcard__note { padding: 2px 15px 10px; font-size: 10.5px; color: var(--ink-2); }
+.dash-grid .chart-card .chart-caption + .dcard__note:empty { display: none; }
+.dash-grid .chart-card > .chart-caption:last-of-type { padding-bottom: 10px; }
+.chart-metric.is-unrec { color: var(--brown); }
+.dcard__head .dcard__lead { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.chart .axis--zero { fill: var(--ink-2); font-weight: 600; }
+.chart .cash-zero { stroke: #8fa3b8; stroke-width: 1.2; }
+.chart .pay-line { stroke: var(--chart-blue); stroke-width: 1; stroke-dasharray: 3 3; }
+.chart .pay-dot { fill: #fff; stroke: var(--chart-blue); stroke-width: 2.2; }
+.chart .unrec-label { fill: var(--brown); font: 600 10px var(--font); }
+
+/* 시나리오: 한 시나리오 = 한 행 */
+.scen-card { display: flex; flex-direction: column; }
+.scen { padding: 2px 15px 4px; }
+.scen__row { display: grid; grid-template-columns: 76px minmax(0, 1fr) 96px; gap: 12px; align-items: center; padding: 9px 8px; border-top: 1px solid var(--line); }
+.scen__head { border-top: 0; padding-top: 6px; padding-bottom: 4px; font-size: 10.5px; color: var(--muted); font-weight: 600; }
+.scen__row.is-base { background: #f4f8ff; border-radius: 8px; border-top-color: transparent; }
+.scen__row.is-base + .scen__row { border-top-color: transparent; }
+.scen__name strong { display: block; font-size: 12.5px; }
+.scen__name small, .scen__pay small { display: block; font-size: 10.5px; color: var(--muted); }
+.scen__profit { display: grid; gap: 5px; min-width: 0; }
+.scen__val { font-size: 13.5px; font-weight: 700; }
+.scen__bar { position: relative; height: 6px; border-radius: 6px; background: #e3eaf0; overflow: hidden; }
+.scen__zero { position: absolute; top: -2px; bottom: -2px; width: 1px; background: #8fa3b8; }
+.scen__fill { position: absolute; top: 0; bottom: 0; border-radius: 6px; background: var(--chart-blue); min-width: 2px; }
+.scen__fill.is-loss { background: var(--danger); }
+.scen__pay { text-align: right; }
+.scen__pay strong { font-size: 12.5px; }
+.scen__notes { padding: 4px 15px 12px; margin-top: auto; font-size: 10.5px; color: var(--ink-2); line-height: 1.55; }
+.scen__notes:empty { display: none; }
+.scen__notes p + p { margin-top: 3px; }
+.scen__notes strong { color: var(--brown); font-weight: 700; margin-right: 4px; }
+.scen-card .dcard__head { border-bottom: 0; padding-bottom: 4px; }
+
+/* 아래쪽: 내용 높이만큼만 */
+.dash-grid--sub .dcard { align-self: start; }
+.dash-grid--sub .price-summary { padding: 10px 16px 8px; }
+.dash-grid--sub .pbar__list { margin-top: 8px; }
+.dash-grid--sub .pbar__list li { padding: 6px 0; }
+.dash-grid--sub .dcard__note { padding-bottom: 12px; }
+.dash-grid--sub .chart-card .dcard__head { border-bottom: 0; }
+
+/* 상세 내역: 비율 수정 */
+.rate-edit { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; font-size: 12px; }
+.rate-edit .field__label { margin: 0; }
+.rate-edit label { display: inline-flex; align-items: center; gap: 6px; }
+.rate-edit .control--mini { margin: 0; max-width: 92px; display: inline-flex; }
+
+/* ---------- 반응형 ---------- */
+@media (max-width: 1200px) {
+  .condbar__applied { margin-left: 0; order: 9; width: 100%; }
+}
+@media (max-width: 1050px) {
+  .kpi-row.kpi-row--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kpi-row--4 .kpi:nth-child(3) { border-left: 0; }
+  .kpi-row--4 .kpi:nth-child(n+3) { border-top: 1px solid var(--line); }
+  .dash-grid--main, .dash-grid--sub { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 560px) {
+  /* 같은 순서, 한 열 */
+  .kpi-row.kpi-row--4 { grid-template-columns: minmax(0, 1fr); }
+  .kpi-row--4 .kpi, .kpi-row--4 .kpi[data-core="payback"] { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; align-items: center; padding: 10px 13px; border-left: 0; border-top: 1px solid var(--line); grid-column: auto; }
+  .kpi-row--4 .kpi:first-child { border-top: 0; }
+  .kpi-row--4 .kpi .kpi__label, .kpi-row--4 .kpi .kpi__top { grid-column: 1; grid-row: 1; }
+  .kpi-row--4 .kpi .kpi__value { grid-column: 2; grid-row: 1; margin: 0; font-size: 20px; text-align: right; }
+  .kpi-row--4 .kpi .kpi__sub, .kpi-row--4 .kpi .kpi__delta { grid-column: 1 / -1; }
+  .kpi-row--4 .kpi.is-unrecovered .kpi__value { font-size: 17px; }
+  .kpi__top { justify-content: flex-start; }
+  .status-line { flex-basis: 100%; }
+  .condbar__applied { white-space: normal; }
+  .scen { padding: 0 10px 4px; }
+  .scen__row { grid-template-columns: 62px minmax(0, 1fr) 82px; gap: 8px; padding: 8px 6px; }
+  .dash-grid .chart-card .dcard__head { flex-wrap: wrap; }
+}
+.dcard__tools { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex: none; }
+@media (max-width: 560px) { .dcard__tools { flex-direction: row; align-items: center; width: 100%; justify-content: space-between; } }
+
+/* ---------- 공개 배포: 빈 상태 · 저장 상태 · 설정 이전 ---------- */
+.overview.is-empty .kpi__value { color: var(--muted); }
+.starter-acts { display: inline-flex; flex-wrap: wrap; gap: 6px; margin-left: 6px; vertical-align: middle; }
+.starter-acts .btn { font-size: 11.5px; padding: 4px 9px; }
+.chart-empty { margin: 0; padding: 22px 15px; font-size: 12px; color: var(--muted); text-align: center; background: var(--subtle); border-radius: 8px; }
+.dash-grid .chart-card .chart-empty, .scen .chart-empty, .pbar .chart-empty { margin: 4px 0 12px; }
+.empty-cell { text-align: center !important; }
+.empty-cell .chart-empty { background: transparent; }
+.save-state.is-warn { color: var(--danger); }
+.save-state.is-warn::before { background: var(--danger); }
+.save-state .link { font-size: inherit; }
+.chip-example { display: inline-block; font-size: 10.5px; font-weight: 700; color: var(--orange); background: var(--orange-50); border: 1px solid var(--orange-line); border-radius: 999px; padding: 0 7px; margin-right: 2px; }
+.top__context .muted { color: var(--muted); }
+.restore-fail { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 16px; padding: 14px 16px; margin-bottom: 10px; border-color: var(--danger-line); background: var(--danger-50); font-size: 12px; color: var(--ink-2); }
+.restore-fail strong { color: var(--danger); font-size: 13px; }
+.restore-fail p { margin-top: 3px; }
+.restore-fail__acts { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.upresets { display: grid; gap: 6px; }
+.upreset { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; }
+.upreset strong { display: block; font-size: 12.5px; }
+.upreset span { font-size: 11px; color: var(--muted); }
+.upreset-new { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.upreset-new .control { flex: 1 1 200px; max-width: 320px; }
+.transfer { margin-top: 14px; }
+#settingsHome + .transfer, .transfer { max-width: 1000px; }
+.steps { margin: 0; padding-left: 20px; font-size: 12.5px; color: var(--ink-2); display: grid; gap: 4px; }
+.steps em { font-style: normal; font-weight: 700; color: var(--teal); }
+.transfer__acts { display: flex; flex-wrap: wrap; gap: 8px; }
+.condbar .control--qty { width: 112px; }
+.condbar .control--mo { width: 76px; }
+@media (max-width: 760px) {
+  .top__actions #exportBtn, .top__actions #importBtn { padding: 6px 8px; }
+}
+@media (max-width: 560px) {
+  .top__actions { gap: 6px; }
+  .top__actions .btn { font-size: 11px; padding: 6px 7px; }
+  #resetBtn .ui-icon { display: none; }
+  .starter-acts { margin: 6px 0 0; display: flex; }
+  .upreset { grid-template-columns: minmax(0, 1fr) auto; }
+  .upreset .icon-btn { grid-row: 1; grid-column: 2; }
+  .upreset .btn { grid-column: 1 / -1; }
+}

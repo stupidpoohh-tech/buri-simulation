@@ -1,0 +1,11 @@
+{
+  "name": "buri-simulation",
+  "version": "0.1.0",
+  "private": true,
+  "description": "BURI시뮬레이션 — 생산·판매 조건별 필요자금·이익·회수 시점 계산 (정적 페이지)",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "test:e2e": "node tests/e2e/check.js",
+    "serve": "python3 -m http.server 8080"
+  }
+}
